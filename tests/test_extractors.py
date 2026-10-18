@@ -44,6 +44,12 @@ class TestEntityExtractor(unittest.TestCase):
         self.assertIn(("1867", "DATE"), ents)
         self.assertIn(("1898", "DATE"), ents)
 
+    def test_gazetteer_entry_ending_in_period(self):
+        # Regression: an entry ending in a period (Washington, D.C.) has no word boundary after it, so the matcher never extracted it.
+        ents = pairs(EntityExtractor().extract(
+            "The institution is headquartered in Washington, D.C."))
+        self.assertIn(("Washington, D.C.", "LOCATION"), ents)
+
     def test_two_word_unknown_name(self):
         # Regression: the capitalized sequence pattern once required a
         # connector word between the first two words, so plain two word

@@ -159,6 +159,46 @@ What remains, measured on the same runs:
 - Alvin and U.S. Navy remain unextracted in the ocean research
   document, for the reasons recorded in `ERROR_ANALYSIS.md`.
 
+## Word boundary matcher fix, October 18, 2026
+
+The first bullet under "What remains" above is now superseded.
+The gazetteer matcher in
+`knowledge_graph_explorer/entity_extractor.py` anchored every
+entry with a word boundary on both sides; an entry ending in a
+period has no word boundary after it, so "Washington, D.C."
+could never match. The matcher now builds its pattern through
+one helper: entries ending in a period assert instead that no
+word character follows, and every other entry keeps the exact
+word boundary match it had. Matching was not loosened in
+general, and the measured run below shows no new false
+positives. A regression test
+(`test_gazetteer_entry_ending_in_period`) covers the case, with
+a note on why it exists.
+
+Scores after this change (22 documents, 148 gold entities, 75
+gold relations, current `results/eval_results.json`): entities P
+0.8904, R 0.8784, F1 0.8844 (130 TP, 16 FP, 18 FN); relations P
+0.5192, R 0.7200, F1 0.6034 (54 TP, 50 FP, 21 FN). Before the
+change: entities F1 0.8805, relations F1 0.6034. Entity recall
+rose by the one name: Washington, D.C. is now extracted as a
+LOCATION in the carnegie-observatories document, all eight
+names added on October 17, 2026 are now extracted, and the
+false positive count did not move. Relation scores did not
+move either: the one gold relation pointing at Washington,
+D.C. (headquartered_in, in carnegie-observatories) uses a type
+outside the supported eight, and its source is still extracted
+truncated, so it stays missed for those reasons. The retrieval
+demo (`results/retrieval_demo.json`, graph of 124 nodes and
+104 edges, up from 123 nodes) stayed at 17 of 22 on both of
+its checks, for the same source side reason.
+
+What remains from the list above, unchanged by this fix: the
+sentence initial person names class (Neil Armstrong, Jennifer
+Doudna, Katherine Johnson), Alvin, and U.S. Navy. One partial
+form also remains: the shorter Washington is still emitted
+alongside Washington, D.C. in that document, as it was before;
+extracting the longest form only is separate work.
+
 ## Scoring
 
 Micro averaged precision, recall, and F1 over the whole set. Entities

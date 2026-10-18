@@ -300,3 +300,37 @@ Doudna, Katherine Johnson) are still not extracted, the
 sentence initial person names class, which this pass did not
 touch. U.S. Navy (the abbreviation form) and Alvin remain
 unextracted, as recorded above.
+
+## Addendum, October 18, 2026: word boundary matcher fix
+
+The classification above and the October 17, 2026 addendum are
+left as written. On October 18, 2026 the boundary case named in
+both was fixed: the gazetteer matcher now asserts, for entries
+ending in a period only, that no word character follows,
+instead of requiring a word boundary that a period can never
+have; every other entry keeps its word boundary match. A
+regression test covers the case. The new measured totals in
+`results/eval_results.json` are: entities P 0.8904 R 0.8784
+F1 0.8844 (130 TP, 16 FP, 18 FN, so 34 entity errors against
+35 in the October 17 addendum); relations P 0.5192 R 0.7200
+F1 0.6034 (54 TP, 50 FP, 21 FN, so 71 relation errors,
+unchanged); 105 error instances in all, against 106. The
+retrieval demo stayed at 17 of 22 on both checks; its graph
+grew from 123 nodes to 124 (edges unchanged at 104) with the
+new Washington, D.C. node. The new errors were not
+reclassified into the classes above in this pass; the counts
+here are artifact totals only.
+
+What this changes in the classes above, by direct check
+against the new run: Washington, D.C. is now extracted as a
+LOCATION, so that one boundary false negative is gone. The
+fragment half of the boundary class remains: Washington is
+still also emitted alongside the full form, so that false
+positive is unchanged, and the false positive total did not
+move (16 before and after), which is the check that the fix
+did not loosen matching generally. Relation totals did not
+move: the gold relation pointing at Washington, D.C. uses
+the unsupported headquartered_in type and its source is
+still extracted truncated. The sentence initial person
+names class, U.S. Navy, and Alvin are untouched, as recorded
+above.

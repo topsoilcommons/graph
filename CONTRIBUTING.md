@@ -57,4 +57,4 @@ named in release notes.
 
 **First week.** Label two short documents in a domain the eval set does not cover, under the rules in eval/README.md, and add them to the corpus. Growing the labeled set is the highest value work here; the eval turns your labels into a score before and after.
 
-**The deep end.** On the 22 document labeled set the extractor stands at entities F1 0.8805 and relations F1 0.6034. Relation precision is 0.5192: about half of the relations it proposes are not stated in the text, and a named class of misses, person names at the start of sentences (Armstrong, Doudna, and Johnson), still escapes it entirely. Beat 0.6034 without hiding a miss. The full error analysis is eval/ERROR_ANALYSIS.md.
+**The deep end.** On the 22 document labeled set the extractor stands at entities F1 0.8844 and relations F1 0.6034. Relation precision is 0.5192: about half of the relations it proposes are not stated in the text, and a named class of misses, person names at the start of sentences (Armstrong, Doudna, and Johnson), still escapes it entirely. Beat 0.6034 without hiding a miss. The full error analysis is eval/ERROR_ANALYSIS.md.

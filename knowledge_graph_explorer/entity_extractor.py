@@ -195,6 +195,20 @@ class Entity:
         return hash((self.text, self.entity_type))
 
 
+def _gazetteer_pattern(name: str) -> str:
+    """Build the word-boundary pattern for one gazetteer entry.
+
+    An entry ending in a period has no word boundary after it (a
+    period and the space or end of text that follows are both
+    non-word characters, and \\b needs a word/non-word transition),
+    so the trailing \\b can never match. For those entries only,
+    assert instead that no word character follows.
+    """
+    if name.endswith("."):
+        return r'\b' + re.escape(name) + r'(?!\w)'
+    return r'\b' + re.escape(name) + r'\b'
+
+
 class EntityExtractor:
     """Extract named entities from text using patterns and gazetteers."""
 
@@ -250,40 +264,40 @@ class EntityExtractor:
         for person_lower, person in self._persons_lower.items():
             if person_lower in sent_lower:
                 # Verify it's a word boundary match
-                pattern = r'\b' + re.escape(person) + r'\b'
+                pattern = _gazetteer_pattern(person)
                 if re.search(pattern, sentence, re.IGNORECASE):
                     entities.append(Entity(person, "PERSON", confidence=0.95))
 
         # Check organizations
         for org_lower, org in self._orgs_lower.items():
             if org_lower in sent_lower:
-                pattern = r'\b' + re.escape(org) + r'\b'
+                pattern = _gazetteer_pattern(org)
                 if re.search(pattern, sentence, re.IGNORECASE):
                     entities.append(Entity(org, "ORGANIZATION", confidence=0.95))
 
         # Check locations (countries, cities, states)
         for loc_lower, loc in self._countries_lower.items():
             if loc_lower in sent_lower:
-                pattern = r'\b' + re.escape(loc) + r'\b'
+                pattern = _gazetteer_pattern(loc)
                 if re.search(pattern, sentence, re.IGNORECASE):
                     entities.append(Entity(loc, "LOCATION", confidence=0.95))
 
         for loc_lower, loc in self._cities_lower.items():
             if loc_lower in sent_lower:
-                pattern = r'\b' + re.escape(loc) + r'\b'
+                pattern = _gazetteer_pattern(loc)
                 if re.search(pattern, sentence, re.IGNORECASE):
                     entities.append(Entity(loc, "LOCATION", confidence=0.90))
 
         for loc_lower, loc in self._states_lower.items():
             if loc_lower in sent_lower:
-                pattern = r'\b' + re.escape(loc) + r'\b'
+                pattern = _gazetteer_pattern(loc)
                 if re.search(pattern, sentence, re.IGNORECASE):
                     entities.append(Entity(loc, "LOCATION", confidence=0.85))
 
         # Check technologies
         for tech_lower, tech in self._tech_lower.items():
             if tech_lower in sent_lower:
-                pattern = r'\b' + re.escape(tech) + r'\b'
+                pattern = _gazetteer_pattern(tech)
                 if re.search(pattern, sentence, re.IGNORECASE):
                     entities.append(Entity(tech, "TECHNOLOGY", confidence=0.90))
 
