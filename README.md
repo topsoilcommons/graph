@@ -26,6 +26,8 @@ dates, and tools the text names, and the links between them that the
 text states. It then puts those names and links in a map you can
 search and check.
 
+Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.8805, relations F1 0.6034.
+
 The tool is written in Python. Its main work runs with no added code
 libraries. NumPy and Matplotlib are used only to score the tests and
 draw pictures. We do not claim the tool is good. We test it on texts
