@@ -334,3 +334,43 @@ the unsupported headquartered_in type and its source is
 still extracted truncated. The sentence initial person
 names class, U.S. Navy, and Alvin are untouched, as recorded
 above.
+
+## Addendum, October 18, 2026: sentence initial person names
+
+The classification above and the earlier addenda are left as
+written. Later on October 18, 2026 the sentence initial part
+of the entity no extraction class was fixed: the capitalized
+sequence pattern no longer skips every sentence initial match.
+A sentence initial candidate now passes only when the
+classifier calls it a PERSON, and never when the match is cut
+short by a hyphen (a fragment of a longer hyphenated name).
+A regression test covers the pass and both blocked cases. The
+new measured totals in `results/eval_results.json` are:
+entities P 0.894 R 0.9122 F1 0.903 (135 TP, 16 FP, 13 FN, so
+29 entity errors against 34 in the October 18 addendum
+above); relations P 0.5217 R 0.8 F1 0.6316 (60 TP, 55 FP,
+15 FN, so 70 relation errors against 71); 99 error instances
+in all, against 105. The retrieval demo rose from 17 of 22
+to 20 of 22 on both checks; its graph grew from 124 nodes
+and 104 edges to 129 nodes and 115 edges. The new errors
+were not reclassified into the classes above in this pass;
+the counts here are artifact totals only, plus the per class
+check below.
+
+What this changes in the classes above, by direct check
+against the new run: all five sentence initial persons
+(Neil Armstrong, Jennifer Doudna, Katherine Johnson, Andrew
+Carnegie, Edwin Hubble) are now extracted, so those five
+entity false negatives are gone and the entity false positive
+total did not move (16 before and after), which is the check
+that the narrower gate did not loosen matching generally.
+Six endpoint cascade relation misses behind three of those
+names were recovered (two each in the armstrong, crispr, and
+katherine johnson documents). Five new relation false
+positives came with the newly extracted people, mostly
+co-occurrence born_in proposals pointing at years that are
+not birth years, which grows the co-occurrence class above
+rather than starting a new one. The unsupported gold types
+class (7) is untouched: no gold labels were changed, and
+that decision stays open for a human. U.S. Navy, Alvin, and
+WHOI remain unextracted, as recorded above.

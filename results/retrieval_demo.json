@@ -1,15 +1,15 @@
 {
   "corpus": "eval/eval_set.json, 22 documents, extracted with the repo's rule based pipeline and merged into one KnowledgeGraph",
   "graph": {
-    "nodes": 124,
-    "edges": 104
+    "nodes": 129,
+    "edges": 115
   },
   "summary": {
     "queries": 22,
-    "target_in_neighbors": 17,
-    "target_in_neighbors_rate": 0.7727,
-    "path_found": 17,
-    "path_found_rate": 0.7727
+    "target_in_neighbors": 20,
+    "target_in_neighbors_rate": 0.9091,
+    "path_found": 20,
+    "path_found_rate": 0.9091
   },
   "rows": [
     {
@@ -176,9 +176,9 @@
         "type": "born_in"
       },
       "neighbors_query": "neighbors of Neil Armstrong",
-      "target_in_neighbors": false,
+      "target_in_neighbors": true,
       "path_query": "path between Neil Armstrong and Wapakoneta",
-      "path_found": false
+      "path_found": true
     },
     {
       "doc": "crispr",
@@ -188,9 +188,9 @@
         "type": "born_in"
       },
       "neighbors_query": "neighbors of Jennifer Doudna",
-      "target_in_neighbors": false,
+      "target_in_neighbors": true,
       "path_query": "path between Jennifer Doudna and Washington",
-      "path_found": false
+      "path_found": true
     },
     {
       "doc": "einstein",
@@ -248,9 +248,9 @@
         "type": "born_in"
       },
       "neighbors_query": "neighbors of Katherine Johnson",
-      "target_in_neighbors": false,
+      "target_in_neighbors": true,
       "path_query": "path between Katherine Johnson and White Sulphur Springs",
-      "path_found": false
+      "path_found": true
     },
     {
       "doc": "ocean-research",

@@ -26,7 +26,7 @@ dates, and tools the text names, and the links between them that the
 text states. It then puts those names and links in a map you can
 search and check.
 
-Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.8844, relations F1 0.6034.
+Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.903, relations F1 0.6316.
 
 The tool is written in Python. Its main work runs with no added code
 libraries. NumPy and Matplotlib are used only to score the tests and
@@ -151,13 +151,13 @@ From `scripts/evaluate_extraction.py`, run 2026-10-18 against the
 hand labeled set in `eval/` (22 documents, 148 gold entities, 75
 gold relations; labeling rules and the expansion record in
 `eval/README.md`). Full artifact: `results/eval_results.json`,
-which stores the scores to four decimals (entities F1 0.8844,
-relations F1 0.6034); the table below rounds them to three.
+which stores the scores to four decimals (entities F1 0.903,
+relations F1 0.6316); the table below rounds them to three.
 
 | | Precision | Recall | F1 |
 | --- | --- | --- | --- |
-| Entities (rule based) | 0.890 | 0.878 | 0.884 |
-| Relations (rule based) | 0.519 | 0.720 | 0.603 |
+| Entities (rule based) | 0.894 | 0.912 | 0.903 |
+| Relations (rule based) | 0.522 | 0.800 | 0.632 |
 
 The 0.937 versus 0.936 discrepancy is settled. On the original
 8 documents, the eval artifact `results/eval_results.json`
@@ -233,23 +233,44 @@ Read those numbers the way they were earned:
   for those named reasons, not this one. The shorter Washington
   fragment is still also emitted alongside the full form; the
   longest match question is separate work, not smuggled in here.
+- **Sentence initial person names fix, October 18, 2026, closed
+  the next named class.** The capitalized sequence pattern no
+  longer skips every sentence initial match outright. A sentence
+  initial candidate is let through only when the classifier
+  calls it a PERSON, and never when the match is cut short by a
+  hyphen (Tim Berners of Tim Berners-Lee is a fragment, not the
+  name); every other sentence initial candidate is still
+  skipped, and a regression test covers all three cases. All
+  five names in the class are now extracted: Neil Armstrong,
+  Jennifer Doudna, Katherine Johnson, Andrew Carnegie, and
+  Edwin Hubble. Entity F1 rose from 0.8844 to 0.903 (precision
+  0.8904 to 0.894, recall 0.8784 to 0.9122; 135 true positives,
+  16 false positives, 13 false negatives, against 130, 16, and
+  18 before, so the entity false positive count did not move).
+  Relation F1 rose from 0.6034 to 0.6316 (precision 0.5192 to
+  0.5217, recall 0.72 to 0.8; 60 true positives, 55 false
+  positives, 15 false negatives, against 54, 50, and 21
+  before): six gold relations were recovered through the five
+  newly extracted people, and five new false positives came
+  with them, mostly co-occurrence born_in proposals pointing
+  at years that are not birth years, the known weakness below.
 - **The misses are named, not rounded away.** The system misses
   entities its gazetteers do not know (Watson, iPhone), cannot
   follow pronouns across sentences ("He joined Microsoft" loses
   the works_for relation), and has documented type ambiguities
   the eval labels against it (Windows and iOS are labeled
   TECHNOLOGY; the gazetteer also lists them as organizations).
-  Named misses that remain: Neil Armstrong, Jennifer Doudna, and
-  Katherine Johnson, whose names sit at the start of sentences
-  in their documents (the sentence initial person names class);
-  the Moon; Wikipedia as a single word organization; and Alvin
-  and U.S. Navy in the ocean research document. Washington,
+  Named misses that remain: the Moon; Wikipedia as a single
+  word organization; and Alvin and U.S. Navy in the ocean
+  research document. Neil Armstrong, Jennifer Doudna, and
+  Katherine Johnson are no longer misses: the sentence initial
+  fix above extracts them. Washington,
   D.C. is no longer a miss: the October 18, 2026 matcher fix
   above extracts it. Linux and the World Wide Web are
   also emitted with a second, wrong type. Details:
   `eval/README.md` and the eval artifact.
-- **Full error analysis:** [`eval/ERROR_ANALYSIS.md`](eval/ERROR_ANALYSIS.md) classifies all 119 error instances (43 entity, 76 relation) of the October 16, 2026 run, before this gazetteer change, into counted classes and ranks what each class implies for the next fix; dated addenda there record the later totals (35 entity errors, 71 relation errors, 106 in all on October 17, 2026; 34 entity errors, 71 relation errors, 105 in all on October 18, 2026) without reclassifying them.
-- **Retrieval over the merged graph, measured:** [`scripts/retrieval_demo.py`](scripts/retrieval_demo.py) builds one graph from all 22 eval documents with the repo's own pipeline (124 nodes, 104 edges) and retrieves answers from it with the QueryEngine, checked against the gold labels. On October 17, 2026, after the gazetteer change above: for one gold relation per document, the gold target appeared among the source's retrieved neighbors in 17 of 22 queries, and a path between the pair was found in 17 of 22, up from 13 of 22 on both checks before the change. The October 18, 2026 matcher fix added the Washington, D.C. node (123 nodes to 124, edges unchanged) and left both checks at 17 of 22. The 5 remaining misses are named per document in [`results/retrieval_demo.json`](results/retrieval_demo.json), not averaged away: armstrong, crispr, and katherine johnson, where the source person is not extracted (the sentence initial person names class, so the relation still cascades, even where the target place now is extracted); ocean-research (Alvin and U.S. Navy, both still unextracted); and carnegie-observatories, where the source organization is extracted truncated and its gold relation type is outside the supported eight, so the now extracted Washington, D.C. target still cannot be reached from it.
+- **Full error analysis:** [`eval/ERROR_ANALYSIS.md`](eval/ERROR_ANALYSIS.md) classifies all 119 error instances (43 entity, 76 relation) of the October 16, 2026 run, before this gazetteer change, into counted classes and ranks what each class implies for the next fix; dated addenda there record the later totals (35 entity errors, 71 relation errors, 106 in all on October 17, 2026; 34 entity errors, 71 relation errors, 105 in all on October 18, 2026; 29 entity errors, 70 relation errors, 99 in all after the sentence initial fix later on October 18, 2026) without reclassifying them.
+- **Retrieval over the merged graph, measured:** [`scripts/retrieval_demo.py`](scripts/retrieval_demo.py) builds one graph from all 22 eval documents with the repo's own pipeline (129 nodes, 115 edges) and retrieves answers from it with the QueryEngine, checked against the gold labels. On October 17, 2026, after the gazetteer change above: for one gold relation per document, the gold target appeared among the source's retrieved neighbors in 17 of 22 queries, and a path between the pair was found in 17 of 22, up from 13 of 22 on both checks before the change. The October 18, 2026 matcher fix added the Washington, D.C. node (123 nodes to 124, edges unchanged) and left both checks at 17 of 22. The sentence initial fix later on October 18, 2026 grew the graph to 129 nodes and 115 edges and raised both checks to 20 of 22. The 2 remaining misses are named per document in [`results/retrieval_demo.json`](results/retrieval_demo.json), not averaged away: ocean-research (Alvin and U.S. Navy, both still unextracted, and the gold relation type commissioned_by is outside the supported eight); and carnegie-observatories, where the source organization is extracted truncated and its gold relation type is outside the supported eight, so the now extracted Washington, D.C. target still cannot be reached from it.
 
 ### Status and limitations
 

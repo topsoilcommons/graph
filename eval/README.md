@@ -199,6 +199,51 @@ form also remains: the shorter Washington is still emitted
 alongside Washington, D.C. in that document, as it was before;
 extracting the longest form only is separate work.
 
+## Sentence initial person names fix, October 18, 2026
+
+The first item under "What remains" above is now superseded.
+The capitalized sequence pattern in
+`knowledge_graph_explorer/entity_extractor.py` skipped every
+match starting within the first three characters of a sentence,
+which is exactly where five gold persons sit at every
+occurrence in their documents: Neil Armstrong, Jennifer
+Doudna, Katherine Johnson, Andrew Carnegie, and Edwin Hubble.
+The blanket skip is replaced by a narrower gate: a sentence
+initial candidate is let through only when the classifier
+calls it a PERSON, and never when the match is cut short by a
+hyphen (a fragment of a longer hyphenated name, not the name
+itself). A regression test
+(`test_sentence_initial_unknown_person`) covers the let
+through case and both still skipped cases.
+
+Scores after this change (22 documents, 148 gold entities, 75
+gold relations, current `results/eval_results.json`): entities
+P 0.894, R 0.9122, F1 0.903 (135 TP, 16 FP, 13 FN); relations
+P 0.5217, R 0.8, F1 0.6316 (60 TP, 55 FP, 15 FN). Before the
+change: entities F1 0.8844, relations F1 0.6034. All five names
+in the class are now extracted as PERSON and the entity false
+positive count did not move (16 before and after). Six gold
+relations were recovered through the newly extracted people;
+five new relation false positives came with them, mostly
+co-occurrence born_in proposals pointing at years that are not
+birth years. The retrieval demo
+(`results/retrieval_demo.json`, graph of 129 nodes and 115
+edges, up from 124 nodes and 104 edges) rose from 17 of 22 to
+20 of 22 on both of its checks; the armstrong, crispr, and
+katherine johnson documents now pass. The 2 remaining misses
+are ocean-research (Alvin and U.S. Navy still unextracted) and
+carnegie-observatories (source organization still extracted
+truncated, gold relation type still outside the supported
+eight).
+
+What remains, unchanged by this fix: Alvin, U.S. Navy, and
+WHOI in the ocean research document; the truncated Carnegie
+and Mount Wilson forms; the Moon; and Wikipedia as a single
+word organization. The 7 gold relations whose types sit
+outside the supported eight are unchanged and still need the
+labeling or schema decision recorded in `ERROR_ANALYSIS.md`;
+no gold labels were changed in this pass.
+
 ## Scoring
 
 Micro averaged precision, recall, and F1 over the whole set. Entities

@@ -381,10 +381,6 @@ class EntityExtractor:
             if candidate.startswith("The "):
                 candidate = candidate[4:]
 
-            # Skip if it starts the sentence and is just two common words
-            if match.start() < 3:
-                continue
-
             # Skip if already matched by gazetteers
             candidate_lower = candidate.lower()
             if (candidate_lower in self._persons_lower or
@@ -395,8 +391,24 @@ class EntityExtractor:
 
             # Classify the entity
             entity_type = self._classify_unknown_entity(candidate, sentence)
-            if entity_type:
-                entities.append(Entity(candidate, entity_type, confidence=0.60))
+            if not entity_type:
+                continue
+
+            # Sentence-initial matches get a narrower gate, not a
+            # blanket skip. Capitalization at the start of a sentence
+            # is weak evidence on its own (any two common words are
+            # capitalized there), so only a candidate the classifier
+            # calls a PERSON is let through, and never when the match
+            # is cut short by a hyphen: that is a fragment of a longer
+            # hyphenated name (Tim Berners of Tim Berners-Lee), not
+            # the name itself.
+            if match.start() < 3:
+                if entity_type != "PERSON":
+                    continue
+                if sentence[match.end():match.end() + 1] == "-":
+                    continue
+
+            entities.append(Entity(candidate, entity_type, confidence=0.60))
 
         return entities
 

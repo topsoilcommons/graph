@@ -50,6 +50,22 @@ class TestEntityExtractor(unittest.TestCase):
             "The institution is headquartered in Washington, D.C."))
         self.assertIn(("Washington, D.C.", "LOCATION"), ents)
 
+    def test_sentence_initial_unknown_person(self):
+        # Regression: the capitalized sequence pattern once skipped
+        # every match starting a sentence, so an unknown person whose
+        # every occurrence is sentence initial (Neil Armstrong in the
+        # eval set) was never extracted. The gate is PERSON only: a
+        # sentence-initial sequence classified as another type, and a
+        # fragment cut short by a hyphen, are still skipped.
+        ents = pairs(EntityExtractor().extract(
+            "Neil Armstrong was born in Ohio in 1930. "
+            "Tim Berners-Lee was born in London in 1955. "
+            "The Carnegie Institution for Science is headquartered "
+            "in Washington, D.C."))
+        self.assertIn(("Neil Armstrong", "PERSON"), ents)
+        self.assertNotIn(("Tim Berners", "PERSON"), ents)
+        self.assertNotIn(("Carnegie Institution", "LOCATION"), ents)
+
     def test_two_word_unknown_name(self):
         # Regression: the capitalized sequence pattern once required a
         # connector word between the first two words, so plain two word
