@@ -26,7 +26,7 @@ dates, and tools the text names, and the links between them that the
 text states. It then puts those names and links in a map you can
 search and check.
 
-Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.9091, relations F1 0.6383.
+Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.9333, relations F1 0.6321.
 
 The tool is written in Python. Its main work runs with no added code
 libraries. NumPy and Matplotlib are used only to score the tests and
@@ -151,13 +151,13 @@ From `scripts/evaluate_extraction.py`, run 2026-10-19 against the
 hand labeled set in `eval/` (22 documents, 148 gold entities, 75
 gold relations; labeling rules and the expansion record in
 `eval/README.md`). Full artifact: `results/eval_results.json`,
-which stores the scores to four decimals (entities F1 0.9091,
-relations F1 0.6383); the table below rounds them to three.
+which stores the scores to four decimals (entities F1 0.9333,
+relations F1 0.6321); the table below rounds them to three.
 
 | | Precision | Recall | F1 |
 | --- | --- | --- | --- |
-| Entities (rule based) | 0.906 | 0.912 | 0.909 |
-| Relations (rule based) | 0.531 | 0.800 | 0.638 |
+| Entities (rule based) | 0.921 | 0.946 | 0.933 |
+| Relations (rule based) | 0.517 | 0.813 | 0.632 |
 
 The 0.937 versus 0.936 discrepancy is settled. On the original
 8 documents, the eval artifact `results/eval_results.json`
@@ -273,6 +273,24 @@ Read those numbers the way they were earned:
   F1 rose from 0.6316 to 0.6383 (precision 0.5217 to 0.531,
   recall 0.8 unchanged; 60 true positives, 53 false positives,
   15 false negatives, against 60, 55, and 15 before).
+- **Gazetteer growth, October 19, 2026 (evening), closed
+  the ocean research names.** Five gold names verified against
+  `eval/eval_set.json` in the ocean-research document were
+  added: Alvin to the technology gazetteer, Woods Hole
+  Oceanographic Institution, WHOI, and U.S. Navy to the
+  organization gazetteer, and Woods Hole, Massachusetts to
+  the city gazetteer. All six gold entities in that document
+  are now extracted with their gold types (the institution
+  was previously extracted with the wrong type, LOCATION).
+  Entity F1 rose from 0.9091 to 0.9333 (precision 0.906 to
+  0.9211, recall 0.9122 to 0.9459; 140 true positives, 12
+  false positives, 8 false negatives, against 135, 14, and
+  13 before). Relation F1 fell slightly, from 0.6383 to
+  0.6321, published as measured (recall 0.8 to 0.8133 on one
+  new true relation; precision 0.531 to 0.5169 on four new
+  co-occurrence proposals the new entities made possible;
+  61 true positives, 57 false positives, 14 false
+  negatives, against 60, 53, and 15 before).
 - **The misses are named, not rounded away.** The system misses
   entities its gazetteers do not know (Watson, iPhone), cannot
   follow pronouns across sentences ("He joined Microsoft" loses
@@ -280,8 +298,10 @@ Read those numbers the way they were earned:
   the eval labels against it (Windows and iOS are labeled
   TECHNOLOGY; the gazetteer also lists them as organizations).
   Named misses that remain: the Moon; Wikipedia as a single
-  word organization; and Alvin and U.S. Navy in the ocean
-  research document. Neil Armstrong, Jennifer Doudna, and
+  word organization. Alvin, U.S. Navy, and WHOI in the ocean
+  research document are no longer misses: the October 19,
+  2026 (evening) gazetteer growth above extracts them, and
+  the institution now carries its gold type, ORGANIZATION. Neil Armstrong, Jennifer Doudna, and
   Katherine Johnson are no longer misses: the sentence initial
   fix above extracts them. Washington,
   D.C. is no longer a miss: the October 18, 2026 matcher fix
@@ -289,7 +309,7 @@ Read those numbers the way they were earned:
   also emitted with a second, wrong type. Details:
   `eval/README.md` and the eval artifact.
 - **Full error analysis:** [`eval/ERROR_ANALYSIS.md`](eval/ERROR_ANALYSIS.md) classifies all 119 error instances (43 entity, 76 relation) of the October 16, 2026 run, before this gazetteer change, into counted classes and ranks what each class implies for the next fix; dated addenda there record the later totals (35 entity errors, 71 relation errors, 106 in all on October 17, 2026; 34 entity errors, 71 relation errors, 105 in all on October 18, 2026; 29 entity errors, 70 relation errors, 99 in all after the sentence initial fix later on October 18, 2026) without reclassifying them.
-- **Retrieval over the merged graph, measured:** [`scripts/retrieval_demo.py`](scripts/retrieval_demo.py) builds one graph from all 22 eval documents with the repo's own pipeline (129 nodes, 115 edges) and retrieves answers from it with the QueryEngine, checked against the gold labels. On October 17, 2026, after the gazetteer change above: for one gold relation per document, the gold target appeared among the source's retrieved neighbors in 17 of 22 queries, and a path between the pair was found in 17 of 22, up from 13 of 22 on both checks before the change. The October 18, 2026 matcher fix added the Washington, D.C. node (123 nodes to 124, edges unchanged) and left both checks at 17 of 22. The sentence initial fix later on October 18, 2026 grew the graph to 129 nodes and 115 edges and raised both checks to 20 of 22. The 2 remaining misses are named per document in [`results/retrieval_demo.json`](results/retrieval_demo.json), not averaged away: ocean-research (Alvin and U.S. Navy, both still unextracted, and the gold relation type commissioned_by is outside the supported eight); and carnegie-observatories, where the source organization is extracted truncated and its gold relation type is outside the supported eight, so the now extracted Washington, D.C. target still cannot be reached from it.
+- **Retrieval over the merged graph, measured:** [`scripts/retrieval_demo.py`](scripts/retrieval_demo.py) builds one graph from all 22 eval documents with the repo's own pipeline (131 nodes, 118 edges) and retrieves answers from it with the QueryEngine, checked against the gold labels. On October 17, 2026, after the gazetteer change above: for one gold relation per document, the gold target appeared among the source's retrieved neighbors in 17 of 22 queries, and a path between the pair was found in 17 of 22, up from 13 of 22 on both checks before the change. The October 18, 2026 matcher fix added the Washington, D.C. node (123 nodes to 124, edges unchanged) and left both checks at 17 of 22. The sentence initial fix later on October 18, 2026 grew the graph to 129 nodes and 115 edges and raised both checks to 20 of 22. The October 19, 2026 (evening) gazetteer growth grew the graph to 131 nodes and 118 edges and left both checks at 20 of 22. The 2 remaining misses are named per document in [`results/retrieval_demo.json`](results/retrieval_demo.json), not averaged away: ocean-research (Alvin and U.S. Navy are now extracted, but the gold relation type commissioned_by is outside the supported eight, so no edge joins them); and carnegie-observatories, where the source organization is extracted truncated and its gold relation type is outside the supported eight, so the now extracted Washington, D.C. target still cannot be reached from it.
 
 ### Status and limitations
 

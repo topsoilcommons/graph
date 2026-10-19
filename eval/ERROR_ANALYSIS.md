@@ -419,3 +419,35 @@ The unsupported gold types class (7) is untouched: no gold
 labels were changed, and that decision stays open for a
 human. U.S. Navy, Alvin, and WHOI remain unextracted, as
 recorded above.
+
+## Addendum, October 19, 2026 (evening): the ocean research gazetteer growth
+
+Five verified gold names from the ocean-research document
+were added to the gazetteers (Alvin as TECHNOLOGY; Woods
+Hole Oceanographic Institution, WHOI, and U.S. Navy as
+ORGANIZATION; Woods Hole, Massachusetts as LOCATION). New
+totals from `results/eval_results.json`: entities P 0.9211
+R 0.9459 F1 0.9333 (140 TP, 12 FP, 8 FN, so 20 entity
+errors against 27 in the October 19 addendum above);
+relations P 0.5169 R 0.8133 F1 0.6321 (61 TP, 57 FP, 14 FN,
+so 71 relation errors against 68); 91 error instances in
+all, against 95. The new errors were not reclassified into
+the classes above in this pass; the counts here are
+artifact totals only, plus the per document check below.
+
+What this changes in the classes above, by direct check
+against the new run: the ocean-research document's five
+entity false negatives are gone and its institution type
+error with them (the gazetteer did not know the names
+class), and one located_in true relation was gained. Four
+new relation false positives appeared, all co-occurrence
+proposals the new entities made possible, in the class
+this analysis already ranks first; that is why relation
+precision and F1 fell while entity scores rose, and it is
+published as measured. The retrieval demo stayed at 20 of
+22 on both checks: the ocean-research miss now stands
+purely on the unsupported gold types class, because
+commissioned_by is outside the supported eight and no
+edge joins Alvin to U.S. Navy. That class (7) is
+untouched: no gold labels were changed, and that decision
+stays open for a human.

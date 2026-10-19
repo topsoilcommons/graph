@@ -290,6 +290,46 @@ eight are unchanged and still need the labeling or schema
 decision recorded in `ERROR_ANALYSIS.md`; no gold labels
 were changed in this pass.
 
+## Gazetteer growth for the ocean research names, October 19, 2026 (evening)
+
+The ocean-research names left under "What remains" in the
+sections above are now closed. Five names were verified
+against the gold labels in `eval_set.json` first, then added
+to the gazetteers in
+`knowledge_graph_explorer/entity_extractor.py`: Alvin
+(TECHNOLOGY) to the technology gazetteer; Woods Hole
+Oceanographic Institution, WHOI, and U.S. Navy
+(ORGANIZATION) to the organization gazetteer; and Woods
+Hole, Massachusetts (LOCATION) to the city gazetteer.
+Before the change, a direct extraction of the
+ocean-research text returned only 1964, Massachusetts,
+Woods Hole, and the institution typed LOCATION. After it,
+all six gold entities in the document are extracted with
+their gold types. The separate Woods Hole fragment is
+still also emitted beside the institution and the combined
+place name; that fragment form is not a gazetteer match
+inside a longer gazetteer match of the same kind and is
+untouched by the October 19 contained fragment fix.
+
+New measured scores in `results/eval_results.json`:
+entities P 0.9211 R 0.9459 F1 0.9333 (140 TP, 12 FP, 8 FN),
+relations P 0.5169 R 0.8133 F1 0.6321 (61 TP, 57 FP, 14
+FN), LLM mode skipped. Relations are published as
+measured: recall rose on one new true relation, precision
+fell on four new co-occurrence proposals, and F1 fell
+slightly from 0.6383. The retrieval demo in
+`results/retrieval_demo.json` stayed at 20 of 22 on both
+checks (131 nodes, 118 edges): the ocean-research query
+still misses, because its gold relation type
+commissioned_by sits outside the supported eight, so no
+edge joins the now extracted Alvin and U.S. Navy. What
+remains: the truncated Carnegie and Mount Wilson forms;
+the Moon; Wikipedia as a single word organization; and
+the 7 gold relations whose types sit outside the supported
+eight, unchanged and still needing the labeling or schema
+decision recorded in `ERROR_ANALYSIS.md`. No gold labels
+were changed in this pass.
+
 ## Scoring
 
 Micro averaged precision, recall, and F1 over the whole set. Entities
