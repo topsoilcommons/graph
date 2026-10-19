@@ -244,6 +244,52 @@ outside the supported eight are unchanged and still need the
 labeling or schema decision recorded in `ERROR_ANALYSIS.md`;
 no gold labels were changed in this pass.
 
+## Contained gazetteer fragment fix, October 19, 2026
+
+The partial form left under "What remains" in the word
+boundary section above is now closed. Gazetteer matches in
+`knowledge_graph_explorer/entity_extractor.py` are collected
+with their spans, and a match whose span is fully contained
+inside a longer matched span in the same sentence is not
+emitted as a separate entity. The rule is general, not a
+Washington only special case: a match of the same length at
+the same span (one name listed under two types, or as both a
+city and a state) is not a fragment and is kept, and a name
+that also occurs outside any longer match keeps that
+occurrence. A regression test
+(`test_gazetteer_fragment_inside_longer_match_not_emitted`)
+covers the contained case and the standalone case for two
+different names, Washington and CRISPR.
+
+Scores after this change (22 documents, 148 gold entities, 75
+gold relations, current `results/eval_results.json`): entities
+P 0.906, R 0.9122, F1 0.9091 (135 TP, 14 FP, 13 FN); relations
+P 0.531, R 0.8, F1 0.6383 (60 TP, 53 FP, 15 FN). Before the
+change: entities F1 0.903, relations F1 0.6316. Exactly two
+entity false positives were removed and no other entity
+changed in any document: Washington beside Washington, D.C.
+in carnegie-observatories, and CRISPR beside CRISPR-Cas9 in
+crispr. The two relation false positives built on the CRISPR
+fragment are gone with it; the correct developed relations
+to CRISPR-Cas9 were already extracted and stay. Standalone
+Washington is still extracted in the microsoft, amazon, and
+crispr documents, where it is gold. The retrieval demo
+(`results/retrieval_demo.json`, graph of 128 nodes and 113
+edges, down from 129 nodes and 115 edges: the CRISPR fragment
+node and its two duplicate edges) stayed at 20 of 22 on both
+of its checks.
+
+What remains, unchanged by this fix: Alvin, U.S. Navy, and
+WHOI in the ocean research document; the truncated Carnegie
+and Mount Wilson forms; Virginia emitted inside West
+Virginia and the Woods Hole fragments (not gazetteer matches
+inside a longer gazetteer match, so this fix does not reach
+them); the Moon; and Wikipedia as a single word organization.
+The 7 gold relations whose types sit outside the supported
+eight are unchanged and still need the labeling or schema
+decision recorded in `ERROR_ANALYSIS.md`; no gold labels
+were changed in this pass.
+
 ## Scoring
 
 Micro averaged precision, recall, and F1 over the whole set. Entities

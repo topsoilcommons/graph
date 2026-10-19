@@ -57,12 +57,12 @@
 <!-- scores:begin -->
   <p>Graph was checked on 22 documents that people had labeled by hand. Those documents held 148 named things, such as people, groups, places, and dates, and 75 links stated between them.</p>
   <p>Of every 100 named things in the documents, Graph found 91 and missed 9. Of every 100 links stated in the documents, Graph found 80 and missed 20.</p>
-  <p>Of every 100 named things Graph returned, 89 were right. Of every 100 links Graph returned, 52 were right.</p>
+  <p>Of every 100 named things Graph returned, 91 were right. Of every 100 links Graph returned, 53 were right.</p>
   <table class="scores-table">
     <thead><tr><th scope="col">What was looked for</th><th scope="col">Found right</th><th scope="col">Missed</th><th scope="col">Extra and wrong</th></tr></thead>
     <tbody>
-    <tr><td>Named things in the text</td><td>135</td><td>13</td><td>16</td></tr>
-    <tr><td>Links stated in the text</td><td>60</td><td>15</td><td>55</td></tr>
+    <tr><td>Named things in the text</td><td>135</td><td>13</td><td>14</td></tr>
+    <tr><td>Links stated in the text</td><td>60</td><td>15</td><td>53</td></tr>
     </tbody>
   </table>
   <p>Key: Found right is how many Graph found that were truly there. Missed is how many were there and Graph did not find. Extra and wrong is how many Graph returned that were not there.</p>
@@ -81,8 +81,8 @@
   <table class="scores-table">
     <thead><tr><th scope="col">What was pulled from the text</th><th scope="col">Precision</th><th scope="col">Recall</th><th scope="col">F1</th><th scope="col">Right</th><th scope="col">Wrong</th><th scope="col">Missed</th></tr></thead>
     <tbody>
-    <tr><td>Entities</td><td>0.8940</td><td>0.9122</td><td>0.9030</td><td>135</td><td>16</td><td>13</td></tr>
-    <tr><td>Relations</td><td>0.5217</td><td>0.8000</td><td>0.6316</td><td>60</td><td>55</td><td>15</td></tr>
+    <tr><td>Entities</td><td>0.9060</td><td>0.9122</td><td>0.9091</td><td>135</td><td>14</td><td>13</td></tr>
+    <tr><td>Relations</td><td>0.5310</td><td>0.8000</td><td>0.6383</td><td>60</td><td>53</td><td>15</td></tr>
     </tbody>
   </table>
   <p>Method: the extractor was run on the hand labeled set named in the artifact, 22 documents with 148 gold entities and 75 gold relations. The artifact is results/eval_results.json in this repository. Right, wrong, and missed count items in that set.</p>

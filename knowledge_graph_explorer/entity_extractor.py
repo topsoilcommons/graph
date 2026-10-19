@@ -256,51 +256,47 @@ class EntityExtractor:
         return self.entities
 
     def _extract_from_gazetteers(self, sentence: str) -> List[Entity]:
-        """Match known entities from gazetteers."""
-        entities = []
+        """Match known entities from gazetteers.
+
+        Matches are collected with their spans first. A match whose
+        span is fully contained inside a longer matched span in the
+        same sentence is a fragment of that longer match, not a
+        separate entity (Washington inside Washington, D.C., CRISPR
+        inside CRISPR-Cas9), so it is not emitted. A match of the
+        same length at the same span (one name listed under two
+        types, or as both a city and a state) is not a fragment and
+        is kept, and a name that also occurs outside any longer
+        match keeps that occurrence.
+        """
+        # (lookup, entity type, confidence), persons first as before
+        gazetteers = [
+            (self._persons_lower, "PERSON", 0.95),
+            (self._orgs_lower, "ORGANIZATION", 0.95),
+            (self._countries_lower, "LOCATION", 0.95),
+            (self._cities_lower, "LOCATION", 0.90),
+            (self._states_lower, "LOCATION", 0.85),
+            (self._tech_lower, "TECHNOLOGY", 0.90),
+        ]
         sent_lower = sentence.lower()
+        matches = []  # (start, end, entity)
+        for lookup, entity_type, confidence in gazetteers:
+            for name_lower, name in lookup.items():
+                if name_lower not in sent_lower:
+                    continue
+                pattern = _gazetteer_pattern(name)
+                for match in re.finditer(pattern, sentence, re.IGNORECASE):
+                    matches.append((match.start(), match.end(),
+                                    Entity(name, entity_type,
+                                           confidence=confidence)))
 
-        # Check persons (multi-word, so check first)
-        for person_lower, person in self._persons_lower.items():
-            if person_lower in sent_lower:
-                # Verify it's a word boundary match
-                pattern = _gazetteer_pattern(person)
-                if re.search(pattern, sentence, re.IGNORECASE):
-                    entities.append(Entity(person, "PERSON", confidence=0.95))
-
-        # Check organizations
-        for org_lower, org in self._orgs_lower.items():
-            if org_lower in sent_lower:
-                pattern = _gazetteer_pattern(org)
-                if re.search(pattern, sentence, re.IGNORECASE):
-                    entities.append(Entity(org, "ORGANIZATION", confidence=0.95))
-
-        # Check locations (countries, cities, states)
-        for loc_lower, loc in self._countries_lower.items():
-            if loc_lower in sent_lower:
-                pattern = _gazetteer_pattern(loc)
-                if re.search(pattern, sentence, re.IGNORECASE):
-                    entities.append(Entity(loc, "LOCATION", confidence=0.95))
-
-        for loc_lower, loc in self._cities_lower.items():
-            if loc_lower in sent_lower:
-                pattern = _gazetteer_pattern(loc)
-                if re.search(pattern, sentence, re.IGNORECASE):
-                    entities.append(Entity(loc, "LOCATION", confidence=0.90))
-
-        for loc_lower, loc in self._states_lower.items():
-            if loc_lower in sent_lower:
-                pattern = _gazetteer_pattern(loc)
-                if re.search(pattern, sentence, re.IGNORECASE):
-                    entities.append(Entity(loc, "LOCATION", confidence=0.85))
-
-        # Check technologies
-        for tech_lower, tech in self._tech_lower.items():
-            if tech_lower in sent_lower:
-                pattern = _gazetteer_pattern(tech)
-                if re.search(pattern, sentence, re.IGNORECASE):
-                    entities.append(Entity(tech, "TECHNOLOGY", confidence=0.90))
-
+        entities = []
+        for i, (start, end, entity) in enumerate(matches):
+            contained = any(
+                j != i and o_start <= start and end <= o_end
+                and (o_end - o_start) > (end - start)
+                for j, (o_start, o_end, _other) in enumerate(matches))
+            if not contained:
+                entities.append(entity)
         return entities
 
     def _extract_dates(self, sentence: str) -> List[Entity]:

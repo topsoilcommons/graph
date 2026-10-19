@@ -50,6 +50,31 @@ class TestEntityExtractor(unittest.TestCase):
             "The institution is headquartered in Washington, D.C."))
         self.assertIn(("Washington, D.C.", "LOCATION"), ents)
 
+    def test_gazetteer_fragment_inside_longer_match_not_emitted(self):
+        # Regression: a shorter gazetteer match fully contained in a
+        # longer matched span was emitted as its own entity beside
+        # the longer form (Washington beside Washington, D.C.).
+        # The contained fragment is not emitted, in general and not
+        # only for that one name, while a standalone occurrence of
+        # the same name elsewhere still extracts.
+        contained = pairs(EntityExtractor().extract(
+            "The institution is headquartered in Washington, D.C."))
+        self.assertIn(("Washington, D.C.", "LOCATION"), contained)
+        self.assertNotIn(("Washington", "LOCATION"), contained)
+
+        standalone = pairs(EntityExtractor().extract(
+            "Jennifer Doudna was born in Washington in 1964."))
+        self.assertIn(("Washington", "LOCATION"), standalone)
+
+        contained_tech = pairs(EntityExtractor().extract(
+            "They developed CRISPR-Cas9 in 2012."))
+        self.assertIn(("CRISPR-Cas9", "TECHNOLOGY"), contained_tech)
+        self.assertNotIn(("CRISPR", "TECHNOLOGY"), contained_tech)
+
+        standalone_tech = pairs(EntityExtractor().extract(
+            "They used CRISPR in the laboratory."))
+        self.assertIn(("CRISPR", "TECHNOLOGY"), standalone_tech)
+
     def test_sentence_initial_unknown_person(self):
         # Regression: the capitalized sequence pattern once skipped
         # every match starting a sentence, so an unknown person whose

@@ -26,7 +26,7 @@ dates, and tools the text names, and the links between them that the
 text states. It then puts those names and links in a map you can
 search and check.
 
-Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.903, relations F1 0.6316.
+Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.9091, relations F1 0.6383.
 
 The tool is written in Python. Its main work runs with no added code
 libraries. NumPy and Matplotlib are used only to score the tests and
@@ -147,17 +147,17 @@ results/eval_results.json
 ### Measured extraction quality
 
 
-From `scripts/evaluate_extraction.py`, run 2026-10-18 against the
+From `scripts/evaluate_extraction.py`, run 2026-10-19 against the
 hand labeled set in `eval/` (22 documents, 148 gold entities, 75
 gold relations; labeling rules and the expansion record in
 `eval/README.md`). Full artifact: `results/eval_results.json`,
-which stores the scores to four decimals (entities F1 0.903,
-relations F1 0.6316); the table below rounds them to three.
+which stores the scores to four decimals (entities F1 0.9091,
+relations F1 0.6383); the table below rounds them to three.
 
 | | Precision | Recall | F1 |
 | --- | --- | --- | --- |
-| Entities (rule based) | 0.894 | 0.912 | 0.903 |
-| Relations (rule based) | 0.522 | 0.800 | 0.632 |
+| Entities (rule based) | 0.906 | 0.912 | 0.909 |
+| Relations (rule based) | 0.531 | 0.800 | 0.638 |
 
 The 0.937 versus 0.936 discrepancy is settled. On the original
 8 documents, the eval artifact `results/eval_results.json`
@@ -254,6 +254,25 @@ Read those numbers the way they were earned:
   newly extracted people, and five new false positives came
   with them, mostly co-occurrence born_in proposals pointing
   at years that are not birth years, the known weakness below.
+- **Contained gazetteer fragment fix, October 19, 2026, closed
+  the fragment the matcher fix left behind.** Gazetteer matches
+  are now collected with their spans, and a match fully
+  contained inside a longer matched span in the same sentence
+  is not emitted as a separate entity; a match of the same
+  length at the same span is kept, and a name that also occurs
+  outside any longer match keeps that occurrence. A regression
+  test covers the contained and standalone cases. Exactly two
+  entity false positives were removed and no other entity
+  changed: Washington beside Washington, D.C., and CRISPR
+  beside CRISPR-Cas9, and the two relation false positives
+  built on the CRISPR fragment went with them. Standalone
+  Washington is still extracted where it is gold. Entity F1
+  rose from 0.903 to 0.9091 (precision 0.894 to 0.906, recall
+  0.9122 unchanged; 135 true positives, 14 false positives, 13
+  false negatives, against 135, 16, and 13 before). Relation
+  F1 rose from 0.6316 to 0.6383 (precision 0.5217 to 0.531,
+  recall 0.8 unchanged; 60 true positives, 53 false positives,
+  15 false negatives, against 60, 55, and 15 before).
 - **The misses are named, not rounded away.** The system misses
   entities its gazetteers do not know (Watson, iPhone), cannot
   follow pronouns across sentences ("He joined Microsoft" loses

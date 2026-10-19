@@ -6,19 +6,19 @@
   "rule_based": {
     "entities": {
       "tp": 135,
-      "fp": 16,
+      "fp": 14,
       "fn": 13,
-      "precision": 0.894,
+      "precision": 0.906,
       "recall": 0.9122,
-      "f1": 0.903
+      "f1": 0.9091
     },
     "relations": {
       "tp": 60,
-      "fp": 55,
+      "fp": 53,
       "fn": 15,
-      "precision": 0.5217,
+      "precision": 0.531,
       "recall": 0.8,
-      "f1": 0.6316
+      "f1": 0.6383
     }
   },
   "llm": {

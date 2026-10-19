@@ -1,8 +1,8 @@
 {
   "corpus": "eval/eval_set.json, 22 documents, extracted with the repo's rule based pipeline and merged into one KnowledgeGraph",
   "graph": {
-    "nodes": 129,
-    "edges": 115
+    "nodes": 128,
+    "edges": 113
   },
   "summary": {
     "queries": 22,

@@ -374,3 +374,48 @@ rather than starting a new one. The unsupported gold types
 class (7) is untouched: no gold labels were changed, and
 that decision stays open for a human. U.S. Navy, Alvin, and
 WHOI remain unextracted, as recorded above.
+
+## Addendum, October 19, 2026: contained gazetteer fragments
+
+The classification above and the earlier addenda are left as
+written. On October 19, 2026 the fragment half of the boundary
+class that the October 18 addendum left open was fixed in
+general form: gazetteer matches are now collected with their
+spans, and a match whose span is fully contained inside a
+longer matched span in the same sentence is not emitted as a
+separate entity. A match of the same length at the same span
+is not a fragment and is kept, and a name that also occurs
+outside any longer match keeps that occurrence. A regression
+test covers the contained case for two different names and
+the standalone case for both. The new measured totals in
+`results/eval_results.json` are: entities P 0.906 R 0.9122
+F1 0.9091 (135 TP, 14 FP, 13 FN, so 27 entity errors against
+29 in the October 18 addendum above); relations P 0.531
+R 0.8 F1 0.6383 (60 TP, 53 FP, 15 FN, so 68 relation errors
+against 70); 95 error instances in all, against 99. The
+retrieval demo stayed at 20 of 22 on both checks; its graph
+shrank from 129 nodes and 115 edges to 128 nodes and 113
+edges. The new errors were not reclassified into the classes
+above in this pass; the counts here are artifact totals only,
+plus the per class check below.
+
+What this changes in the classes above, by direct check
+against the new run: exactly two entity false positives were
+removed, the Washington fragment beside Washington, D.C. in
+the carnegie-observatories document and the CRISPR fragment
+beside CRISPR-Cas9 in the crispr document, and no other
+entity changed in any document. The two relation false
+positives built on the CRISPR fragment (Jennifer Doudna and
+Emmanuelle Charpentier each developed CRISPR, beside the
+correct developed relations to CRISPR-Cas9, which were
+already extracted and stay) are gone with it. Standalone
+Washington is still extracted in the microsoft, amazon, and
+crispr documents, where it is gold, which is the check that
+the suppression is by span, not by name. Other fragment
+forms named above are not gazetteer matches inside a longer
+gazetteer match and are untouched by this fix: Virginia
+inside West Virginia and the Woods Hole fragments remain.
+The unsupported gold types class (7) is untouched: no gold
+labels were changed, and that decision stays open for a
+human. U.S. Navy, Alvin, and WHOI remain unextracted, as
+recorded above.
