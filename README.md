@@ -26,7 +26,7 @@ dates, and tools the text names, and the links between them that the
 text states. It then puts those names and links in a map you can
 search and check.
 
-Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.9333, relations F1 0.6321.
+Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.9396, relations F1 0.6387.
 
 The tool is written in Python. Its main work runs with no added code
 libraries. NumPy and Matplotlib are used only to score the tests and
@@ -147,17 +147,17 @@ results/eval_results.json
 ### Measured extraction quality
 
 
-From `scripts/evaluate_extraction.py`, run 2026-10-19 against the
+From `scripts/evaluate_extraction.py`, run 2026-10-20 against the
 hand labeled set in `eval/` (22 documents, 148 gold entities, 75
 gold relations; labeling rules and the expansion record in
 `eval/README.md`). Full artifact: `results/eval_results.json`,
-which stores the scores to four decimals (entities F1 0.9333,
-relations F1 0.6321); the table below rounds them to three.
+which stores the scores to four decimals (entities F1 0.9396,
+relations F1 0.6387); the table below rounds them to three.
 
 | | Precision | Recall | F1 |
 | --- | --- | --- | --- |
-| Entities (rule based) | 0.921 | 0.946 | 0.933 |
-| Relations (rule based) | 0.517 | 0.813 | 0.632 |
+| Entities (rule based) | 0.933 | 0.946 | 0.940 |
+| Relations (rule based) | 0.526 | 0.813 | 0.639 |
 
 The 0.937 versus 0.936 discrepancy is settled. On the original
 8 documents, the eval artifact `results/eval_results.json`
@@ -291,6 +291,38 @@ Read those numbers the way they were earned:
   co-occurrence proposals the new entities made possible;
   61 true positives, 57 false positives, 14 false
   negatives, against 60, 53, and 15 before).
+- **Cross path contained fragment fix, October 20, 2026,
+  closed the fragments the gazetteer only fix could not
+  reach.** The October 19, 2026 contained fragment fix only
+  compared gazetteer matches with each other. The two
+  fragments left behind crossed paths: Virginia is a
+  gazetteer match inside West Virginia, which only the
+  capitalized sequence pattern extracts, and Woods Hole is
+  a capitalized sequence match inside the gazetteer match
+  Woods Hole, Massachusetts. Extracted entities now carry
+  their spans, and an entity whose span is fully contained
+  inside a longer entity's span in the same sentence is
+  not emitted as a separate entity, whichever path
+  produced each one; a match of the same length at the
+  same span is kept, and a name that also occurs outside
+  any longer match keeps that occurrence. A regression
+  test covers both fragment cases and both standalone
+  cases. Exactly two entity false positives were removed
+  and no other entity changed in any document, and
+  neither removed entity is gold: Entity F1 rose from
+  0.9333 to 0.9396 (precision 0.9211 to 0.9333, recall
+  0.9459 unchanged; 140 true positives, 10 false
+  positives, 8 false negatives, against 140, 12, and 8
+  before). Relation F1 rose from 0.6321 to 0.6387
+  (precision 0.5169 to 0.5259, recall 0.8133 unchanged;
+  61 true positives, 55 false positives, 14 false
+  negatives, against 61, 57, and 14 before): the two
+  relation false positives built on the Woods Hole
+  fragment went with it. Standalone Virginia and
+  standalone Woods Hole are still extracted where they
+  stand alone. West Virginia is still typed PERSON, so
+  its gold LOCATION form stays missed for that named
+  reason, not this one.
 - **The misses are named, not rounded away.** The system misses
   entities its gazetteers do not know (Watson, iPhone), cannot
   follow pronouns across sentences ("He joined Microsoft" loses
@@ -309,7 +341,7 @@ Read those numbers the way they were earned:
   also emitted with a second, wrong type. Details:
   `eval/README.md` and the eval artifact.
 - **Full error analysis:** [`eval/ERROR_ANALYSIS.md`](eval/ERROR_ANALYSIS.md) classifies all 119 error instances (43 entity, 76 relation) of the October 16, 2026 run, before this gazetteer change, into counted classes and ranks what each class implies for the next fix; dated addenda there record the later totals (35 entity errors, 71 relation errors, 106 in all on October 17, 2026; 34 entity errors, 71 relation errors, 105 in all on October 18, 2026; 29 entity errors, 70 relation errors, 99 in all after the sentence initial fix later on October 18, 2026) without reclassifying them.
-- **Retrieval over the merged graph, measured:** [`scripts/retrieval_demo.py`](scripts/retrieval_demo.py) builds one graph from all 22 eval documents with the repo's own pipeline (131 nodes, 118 edges) and retrieves answers from it with the QueryEngine, checked against the gold labels. On October 17, 2026, after the gazetteer change above: for one gold relation per document, the gold target appeared among the source's retrieved neighbors in 17 of 22 queries, and a path between the pair was found in 17 of 22, up from 13 of 22 on both checks before the change. The October 18, 2026 matcher fix added the Washington, D.C. node (123 nodes to 124, edges unchanged) and left both checks at 17 of 22. The sentence initial fix later on October 18, 2026 grew the graph to 129 nodes and 115 edges and raised both checks to 20 of 22. The October 19, 2026 (evening) gazetteer growth grew the graph to 131 nodes and 118 edges and left both checks at 20 of 22. The 2 remaining misses are named per document in [`results/retrieval_demo.json`](results/retrieval_demo.json), not averaged away: ocean-research (Alvin and U.S. Navy are now extracted, but the gold relation type commissioned_by is outside the supported eight, so no edge joins them); and carnegie-observatories, where the source organization is extracted truncated and its gold relation type is outside the supported eight, so the now extracted Washington, D.C. target still cannot be reached from it.
+- **Retrieval over the merged graph, measured:** [`scripts/retrieval_demo.py`](scripts/retrieval_demo.py) builds one graph from all 22 eval documents with the repo's own pipeline (129 nodes, 116 edges) and retrieves answers from it with the QueryEngine, checked against the gold labels. On October 17, 2026, after the gazetteer change above: for one gold relation per document, the gold target appeared among the source's retrieved neighbors in 17 of 22 queries, and a path between the pair was found in 17 of 22, up from 13 of 22 on both checks before the change. The October 18, 2026 matcher fix added the Washington, D.C. node (123 nodes to 124, edges unchanged) and left both checks at 17 of 22. The sentence initial fix later on October 18, 2026 grew the graph to 129 nodes and 115 edges and raised both checks to 20 of 22. The October 19, 2026 (evening) gazetteer growth grew the graph to 131 nodes and 118 edges and left both checks at 20 of 22. The October 20, 2026 cross path fragment fix shrank the graph to 129 nodes and 116 edges (the Virginia and Woods Hole fragment nodes and their edges) and left both checks at 20 of 22. The 2 remaining misses are named per document in [`results/retrieval_demo.json`](results/retrieval_demo.json), not averaged away: ocean-research (Alvin and U.S. Navy are now extracted, but the gold relation type commissioned_by is outside the supported eight, so no edge joins them); and carnegie-observatories, where the source organization is extracted truncated and its gold relation type is outside the supported eight, so the now extracted Washington, D.C. target still cannot be reached from it.
 
 ### Status and limitations
 

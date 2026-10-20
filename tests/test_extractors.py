@@ -75,6 +75,37 @@ class TestEntityExtractor(unittest.TestCase):
             "They used CRISPR in the laboratory."))
         self.assertIn(("CRISPR", "TECHNOLOGY"), standalone_tech)
 
+    def test_cross_path_fragment_inside_longer_entity_not_emitted(self):
+        # Regression: the contained fragment fix for gazetteer matches
+        # did not reach fragments whose longer form comes from another
+        # extraction path. Virginia (gazetteer) sits inside West
+        # Virginia (capitalized sequence), and Woods Hole (capitalized
+        # sequence) sits inside Woods Hole, Massachusetts (gazetteer).
+        # Neither fragment is emitted, while a standalone occurrence
+        # of each name in its own sentence still extracts.
+        contained = pairs(EntityExtractor().extract(
+            "Katherine Johnson was born in White Sulphur Springs, "
+            "West Virginia, in 1918."))
+        self.assertIn(("West Virginia", "PERSON"), contained)
+        self.assertNotIn(("Virginia", "LOCATION"), contained)
+
+        standalone = pairs(EntityExtractor().extract(
+            "She was born in Virginia in 1918."))
+        self.assertIn(("Virginia", "LOCATION"), standalone)
+
+        contained_place = pairs(EntityExtractor().extract(
+            "Alvin is operated by the Woods Hole Oceanographic "
+            "Institution (WHOI), based in Woods Hole, Massachusetts."))
+        self.assertIn(("Woods Hole, Massachusetts", "LOCATION"),
+                      contained_place)
+        self.assertIn(("Woods Hole Oceanographic Institution",
+                       "ORGANIZATION"), contained_place)
+        self.assertNotIn(("Woods Hole", "LOCATION"), contained_place)
+
+        standalone_place = pairs(EntityExtractor().extract(
+            "The institution is based in Woods Hole."))
+        self.assertIn(("Woods Hole", "LOCATION"), standalone_place)
+
     def test_sentence_initial_unknown_person(self):
         # Regression: the capitalized sequence pattern once skipped
         # every match starting a sentence, so an unknown person whose

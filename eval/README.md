@@ -330,6 +330,53 @@ eight, unchanged and still needing the labeling or schema
 decision recorded in `ERROR_ANALYSIS.md`. No gold labels
 were changed in this pass.
 
+## Cross path contained fragment fix, October 20, 2026
+
+The fragment forms left under "What remains" in the
+sections above are now closed. The two fragments crossed
+extraction paths: Virginia is a gazetteer match inside
+West Virginia, which only the capitalized sequence pattern
+extracts, and Woods Hole is a capitalized sequence match
+inside the gazetteer match Woods Hole, Massachusetts.
+Extracted entities in
+`knowledge_graph_explorer/entity_extractor.py` now carry
+their spans, and an entity whose span is fully contained
+inside a longer entity's span in the same sentence is not
+emitted as a separate entity, whichever path produced each
+one. A match of the same length at the same span is kept,
+an entity without a known span is never dropped and never
+causes a drop, and a name that also occurs outside any
+longer match keeps that occurrence. A regression test
+(`test_cross_path_fragment_inside_longer_entity_not_emitted`)
+covers both fragment cases and both standalone cases.
+
+Scores after this change (22 documents, 148 gold entities,
+75 gold relations, current `results/eval_results.json`):
+entities P 0.9333, R 0.9459, F1 0.9396 (140 TP, 10 FP,
+8 FN); relations P 0.5259, R 0.8133, F1 0.6387 (61 TP,
+55 FP, 14 FN). Before the change: entities F1 0.9333,
+relations F1 0.6321. Exactly two entity false positives
+were removed and no other entity changed in any document,
+and neither removed entity is gold: the Virginia fragment
+in the katherine johnson document and the Woods Hole
+fragment in the ocean-research document. The two relation
+false positives built on the Woods Hole fragment (both
+located_in proposals to the fragment) are gone with it.
+Standalone Virginia and standalone Woods Hole are still
+extracted. The retrieval demo
+(`results/retrieval_demo.json`, graph of 129 nodes and
+116 edges, down from 131 nodes and 118 edges) stayed at
+20 of 22 on both of its checks.
+
+What remains, unchanged by this fix: the truncated
+Carnegie and Mount Wilson forms; West Virginia typed
+PERSON, so its gold LOCATION form stays missed; the Moon;
+and Wikipedia as a single word organization. The 7 gold
+relations whose types sit outside the supported eight are
+unchanged and still need the labeling or schema decision
+recorded in `ERROR_ANALYSIS.md`; no gold labels were
+changed in this pass.
+
 ## Scoring
 
 Micro averaged precision, recall, and F1 over the whole set. Entities

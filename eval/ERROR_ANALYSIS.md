@@ -451,3 +451,59 @@ commissioned_by is outside the supported eight and no
 edge joins Alvin to U.S. Navy. That class (7) is
 untouched: no gold labels were changed, and that decision
 stays open for a human.
+
+## Addendum, October 20, 2026: cross path contained fragments
+
+The classification above and the earlier addenda are left as
+written. On October 20, 2026 the fragment forms the October
+19 addendum said the contained gazetteer fix could not reach
+were fixed in general form. The two fragments came from
+different paths than the longer forms containing them:
+Virginia is a gazetteer match (states and regions) inside
+West Virginia, which only the capitalized sequence pattern
+extracts, and Woods Hole is a capitalized sequence match
+inside the gazetteer match Woods Hole, Massachusetts (its
+other occurrence sits inside Woods Hole Oceanographic
+Institution). Extracted entities now carry their spans, and
+in `extract` an entity whose span is fully contained inside
+a longer entity's span in the same sentence is not emitted
+as a separate entity, whichever path produced each one. A
+match of the same length at the same span is not a fragment
+and is kept, an entity without a known span is never dropped
+and never causes a drop, and a name that also occurs outside
+any longer match keeps that occurrence. A regression test
+covers both fragment cases and both standalone cases. The
+new measured totals in `results/eval_results.json` are:
+entities P 0.9333 R 0.9459 F1 0.9396 (140 TP, 10 FP, 8 FN,
+so 18 entity errors against 20 in the October 19 evening
+addendum above); relations P 0.5259 R 0.8133 F1 0.6387
+(61 TP, 55 FP, 14 FN, so 69 relation errors against 71);
+87 error instances in all, against 91. The retrieval demo
+stayed at 20 of 22 on both checks; its graph shrank from
+131 nodes and 118 edges to 129 nodes and 116 edges. The
+new errors were not reclassified into the classes above in
+this pass; the counts here are artifact totals only, plus
+the per class check below.
+
+What this changes in the classes above, by direct check
+against the new run: exactly two entity false positives
+were removed and no other entity changed in any document,
+the Virginia fragment beside West Virginia in the
+katherine johnson document and the Woods Hole fragment
+beside Woods Hole, Massachusetts in the ocean-research
+document, and neither removed entity is a gold entity, so
+the true positive and false negative totals did not move.
+The two relation false positives built on the Woods Hole
+fragment are gone with it (WHOI located_in Woods Hole and
+Woods Hole Oceanographic Institution located_in Woods
+Hole, both co-occurrence proposals to the fragment, beside
+the correct located_in relation to Woods Hole,
+Massachusetts, which was already extracted and stays).
+Standalone Virginia and standalone Woods Hole are still
+extracted, which is the check that the suppression is by
+span, not by name. West Virginia is still typed PERSON by
+the capitalized sequence pattern, so its gold LOCATION
+form stays in the same text, wrong type class, unchanged.
+The unsupported gold types class (7) is untouched: no gold
+labels were changed, and that decision stays open for a
+human.

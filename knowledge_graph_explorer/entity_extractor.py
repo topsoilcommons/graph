@@ -178,11 +178,12 @@ class Entity:
     """Represents an extracted entity."""
 
     def __init__(self, text: str, entity_type: str, confidence: float = 1.0,
-                 source_sentence: str = ""):
+                 source_sentence: str = "", span=None):
         self.text = text
         self.entity_type = entity_type  # PERSON, ORGANIZATION, LOCATION, DATE, TECHNOLOGY
         self.confidence = confidence
         self.source_sentence = source_sentence
+        self.span = span  # (start, end) in source_sentence, when known
         self.mentions = 1
 
     def __repr__(self):
@@ -243,6 +244,29 @@ class EntityExtractor:
             sent_entities.extend(self._extract_by_context(sentence))
             sent_entities.extend(self._extract_capitalized_sequences(sentence))
 
+            # Cross-path contained fragments: an entity whose span is
+            # fully contained inside a longer entity's span in the same
+            # sentence is a fragment of that longer entity, not a
+            # separate entity, whichever extraction path produced each
+            # one (Virginia, from the gazetteer, inside West Virginia,
+            # from the capitalized sequence pattern; Woods Hole, from
+            # the capitalized sequence pattern, inside the gazetteer
+            # match Woods Hole, Massachusetts). A match of the same
+            # length at the same span is not a fragment and is kept,
+            # and a name that also occurs outside any longer match
+            # keeps that occurrence. Entities without a known span
+            # are never dropped and never cause a drop.
+            sent_entities = [
+                ent for i, ent in enumerate(sent_entities)
+                if not (ent.span is not None and any(
+                    j != i and other.span is not None
+                    and other.span[0] <= ent.span[0]
+                    and ent.span[1] <= other.span[1]
+                    and (other.span[1] - other.span[0])
+                    > (ent.span[1] - ent.span[0])
+                    for j, other in enumerate(sent_entities)))
+            ]
+
             # Deduplicate within sentence, keeping highest confidence
             seen = {}
             for ent in sent_entities:
@@ -289,7 +313,9 @@ class EntityExtractor:
                 for match in re.finditer(pattern, sentence, re.IGNORECASE):
                     matches.append((match.start(), match.end(),
                                     Entity(name, entity_type,
-                                           confidence=confidence)))
+                                           confidence=confidence,
+                                           span=(match.start(),
+                                                 match.end()))))
 
         entities = []
         for i, (start, end, entity) in enumerate(matches):
@@ -307,7 +333,8 @@ class EntityExtractor:
 
         # Year patterns: 1900-2099
         for match in re.finditer(r'\b((?:18|19|20)\d{2})\b', sentence):
-            entities.append(Entity(match.group(1), "DATE", confidence=0.85))
+            entities.append(Entity(match.group(1), "DATE", confidence=0.85,
+                                   span=match.span(1)))
 
         # Month Year: "January 2020", "Jan 2020"
         month_pattern = (
@@ -317,17 +344,20 @@ class EntityExtractor:
             r'\s+\d{4})\b'
         )
         for match in re.finditer(month_pattern, sentence):
-            entities.append(Entity(match.group(1), "DATE", confidence=0.90))
+            entities.append(Entity(match.group(1), "DATE", confidence=0.90,
+                                   span=match.span(1)))
 
         # Decade patterns: "1990s", "2000s"
         for match in re.finditer(r'\b((?:18|19|20)\d{2}s)\b', sentence):
-            entities.append(Entity(match.group(1), "DATE", confidence=0.85))
+            entities.append(Entity(match.group(1), "DATE", confidence=0.85,
+                                   span=match.span(1)))
 
         # "early/mid/late 2000s" style
         for match in re.finditer(
             r'\b((?:early|mid|late)\s+(?:18|19|20)\d{2}s?)\b', sentence, re.IGNORECASE
         ):
-            entities.append(Entity(match.group(1), "DATE", confidence=0.80))
+            entities.append(Entity(match.group(1), "DATE", confidence=0.80,
+                                   span=match.span(1)))
 
         return entities
 
@@ -352,7 +382,10 @@ class EntityExtractor:
                 if name_parts:
                     name = " ".join(name_parts)
                     if not self._is_known_non_person(name):
-                        entities.append(Entity(name, "PERSON", confidence=0.75))
+                        start = sentence.find(name)
+                        span = (start, start + len(name)) if start >= 0 else None
+                        entities.append(Entity(name, "PERSON", confidence=0.75,
+                                               span=span))
 
             # Org context: "company X", "startup X"
             elif lower in ORG_CONTEXT:
@@ -364,7 +397,10 @@ class EntityExtractor:
                         break
                 if name_parts:
                     name = " ".join(name_parts)
-                    entities.append(Entity(name, "ORGANIZATION", confidence=0.70))
+                    start = sentence.find(name)
+                    span = (start, start + len(name)) if start >= 0 else None
+                    entities.append(Entity(name, "ORGANIZATION", confidence=0.70,
+                                           span=span))
 
         return entities
 
@@ -376,8 +412,11 @@ class EntityExtractor:
         pattern = r'\b([A-Z][a-z]+(?:\s+(?:of|the|and|for|de|van|von|al|el|la|le)\s+|\s+)[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b'
         for match in re.finditer(pattern, sentence):
             candidate = match.group(1).strip()
+            span_start, span_end = match.span(1)
             if candidate.startswith("The "):
                 candidate = candidate[4:]
+                span_start += 4
+            span = (span_start, span_start + len(candidate))
 
             # Skip if already matched by gazetteers
             candidate_lower = candidate.lower()
@@ -406,7 +445,8 @@ class EntityExtractor:
                 if sentence[match.end():match.end() + 1] == "-":
                     continue
 
-            entities.append(Entity(candidate, entity_type, confidence=0.60))
+            entities.append(Entity(candidate, entity_type, confidence=0.60,
+                                   span=span))
 
         return entities
 
