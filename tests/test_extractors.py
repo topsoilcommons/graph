@@ -86,7 +86,7 @@ class TestEntityExtractor(unittest.TestCase):
         contained = pairs(EntityExtractor().extract(
             "Katherine Johnson was born in White Sulphur Springs, "
             "West Virginia, in 1918."))
-        self.assertIn(("West Virginia", "PERSON"), contained)
+        self.assertIn(("West Virginia", "LOCATION"), contained)
         self.assertNotIn(("Virginia", "LOCATION"), contained)
 
         standalone = pairs(EntityExtractor().extract(
@@ -105,6 +105,27 @@ class TestEntityExtractor(unittest.TestCase):
         standalone_place = pairs(EntityExtractor().extract(
             "The institution is based in Woods Hole."))
         self.assertIn(("Woods Hole", "LOCATION"), standalone_place)
+
+    def test_gazetteer_state_name_carries_gazetteer_type(self):
+        # Regression: West Virginia was typed PERSON. It was absent
+        # from the states gazetteer (only Virginia was listed), and
+        # the capitalized sequence path's gazetteer deferral check
+        # omitted the states lookup, so the classifier's default for
+        # a two word capitalized sequence (PERSON) won over the
+        # gazetteer type. A state name matched by the gazetteer now
+        # carries the gazetteer type, LOCATION, and no PERSON form
+        # is emitted for it.
+        ents = pairs(EntityExtractor().extract(
+            "Katherine Johnson was born in White Sulphur Springs, "
+            "West Virginia, in 1918."))
+        self.assertIn(("West Virginia", "LOCATION"), ents)
+        self.assertNotIn(("West Virginia", "PERSON"), ents)
+        self.assertNotIn(("Virginia", "LOCATION"), ents)
+
+        other_context = pairs(EntityExtractor().extract(
+            "The team traveled to West Virginia for the survey."))
+        self.assertIn(("West Virginia", "LOCATION"), other_context)
+        self.assertNotIn(("West Virginia", "PERSON"), other_context)
 
     def test_sentence_initial_unknown_person(self):
         # Regression: the capitalized sequence pattern once skipped

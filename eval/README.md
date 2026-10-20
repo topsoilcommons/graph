@@ -377,6 +377,51 @@ unchanged and still need the labeling or schema decision
 recorded in `ERROR_ANALYSIS.md`; no gold labels were
 changed in this pass.
 
+## Gazetteer state type precedence fix, October 20, 2026 (evening)
+
+The "West Virginia typed PERSON" item left under "What
+remains" above is now closed. Root cause, in two parts:
+West Virginia was not in any gazetteer (the states and
+regions gazetteer listed Virginia only), and the
+capitalized sequence pattern's gazetteer deferral check
+in `knowledge_graph_explorer/entity_extractor.py` tested
+the person, organization, country, and city lookups but
+not the states lookup, so a state name had no gazetteer
+type to defer to and the unknown name classifier's
+default for a two word capitalized sequence, PERSON, won.
+West Virginia, spelled exactly as the gold label spells
+it, is now in the states and regions gazetteer, and the
+deferral check includes the states lookup, so US state
+names matched by the gazetteer carry the gazetteer type.
+A regression test
+(`test_gazetteer_state_name_carries_gazetteer_type`)
+covers the case in two contexts, and the older cross
+path test's West Virginia assertion is updated from
+PERSON to LOCATION. No gold labels were changed.
+
+Scores after this change (22 documents, 148 gold
+entities, 75 gold relations, current
+`results/eval_results.json`): entities P 0.94, R 0.9527,
+F1 0.9463 (141 TP, 9 FP, 7 FN); relations P 0.5259, R
+0.8133, F1 0.6387 (61 TP, 55 FP, 14 FN). Before the
+change: entities F1 0.9396, relations F1 0.6387. A per
+document diff of extracted entities and relations
+against the pre fix code shows exactly one change in
+the whole set: West Virginia in the katherine johnson
+document, PERSON to LOCATION, and no relation change in
+any document, which is why the relation scores did not
+move (relation matching is on endpoint texts). The
+retrieval demo (`results/retrieval_demo.json`, graph of
+129 nodes and 116 edges) stayed at 20 of 22 on both of
+its checks; its artifact is unchanged.
+
+What remains, unchanged by this fix: the truncated
+Carnegie and Mount Wilson forms; the Moon; and Wikipedia
+as a single word organization. The 7 gold relations
+whose types sit outside the supported eight are
+unchanged and still need the labeling or schema decision
+recorded in `ERROR_ANALYSIS.md`.
+
 ## Scoring
 
 Micro averaged precision, recall, and F1 over the whole set. Entities

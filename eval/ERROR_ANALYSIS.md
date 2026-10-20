@@ -507,3 +507,46 @@ form stays in the same text, wrong type class, unchanged.
 The unsupported gold types class (7) is untouched: no gold
 labels were changed, and that decision stays open for a
 human.
+
+## Addendum, October 20, 2026 (evening): gazetteer state type precedence
+
+The classification above and the earlier addenda are left as
+written. On October 20, 2026 (evening) the West Virginia item
+the October 20 addendum left in the same text, wrong type
+class was fixed. Root cause, in two parts: West Virginia was
+absent from the states and regions gazetteer (Virginia only
+was listed), and the capitalized sequence pattern's
+gazetteer deferral check in
+`knowledge_graph_explorer/entity_extractor.py` tested the
+person, organization, country, and city lookups but omitted
+the states lookup, so the classifier's default for a two
+word capitalized sequence (PERSON) won. West Virginia,
+verified against the gold labels, was added to the states
+gazetteer, and the deferral check now includes the states
+lookup, so a state name matched by the gazetteer carries
+the gazetteer type. A regression test covers the case; the
+older cross path test's West Virginia assertion was updated
+from PERSON to LOCATION. The new measured totals in
+`results/eval_results.json` are: entities P 0.94 R 0.9527
+F1 0.9463 (141 TP, 9 FP, 7 FN, so 16 entity errors against
+18 in the October 20 addendum above); relations P 0.5259
+R 0.8133 F1 0.6387 (61 TP, 55 FP, 14 FN, so 69 relation
+errors, unchanged); 85 error instances in all, against 87.
+The retrieval demo stayed at 20 of 22 on both checks; its
+graph (129 nodes, 116 edges) and artifact are unchanged.
+The new errors were not reclassified into the classes
+above in this pass; the counts here are artifact totals
+only, plus the per document check below.
+
+What this changes in the classes above, by direct check
+against the new run: a per document diff of extracted
+entities and relations against the pre fix code shows
+exactly one change in the whole set, West Virginia in the
+katherine johnson document from PERSON to LOCATION, so
+that one same text, wrong type false negative and its
+mirror false positive are both gone, and no other entity
+or relation changed in any document. Relation totals did
+not move because relation matching is on endpoint texts,
+which did not change. The unsupported gold types class
+(7) is untouched: no gold labels were changed, and that
+decision stays open for a human.

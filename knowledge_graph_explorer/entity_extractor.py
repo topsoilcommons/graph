@@ -40,7 +40,7 @@ CITIES = {
 
 STATES_REGIONS = {
     "California", "Texas", "New York", "Massachusetts", "Washington",
-    "Virginia", "Florida", "Illinois", "Pennsylvania", "Ohio",
+    "Virginia", "West Virginia", "Florida", "Illinois", "Pennsylvania", "Ohio",
     "Georgia", "Colorado", "Oregon", "Bavaria", "Saxony", "Alabama",
     "Europe", "Asia", "Africa", "North America", "South America",
     "Middle East", "Southeast Asia", "East Asia", "Western Europe",
@@ -418,12 +418,18 @@ class EntityExtractor:
                 span_start += 4
             span = (span_start, span_start + len(candidate))
 
-            # Skip if already matched by gazetteers
+            # Skip if already matched by gazetteers. The gazetteer
+            # type wins over the classifier below for every
+            # gazetteer class, states and regions included: a state
+            # name in STATES_REGIONS (West Virginia) was previously
+            # re-emitted here with the classifier's PERSON default
+            # because this check omitted the states lookup.
             candidate_lower = candidate.lower()
             if (candidate_lower in self._persons_lower or
                 candidate_lower in self._orgs_lower or
                 candidate_lower in self._countries_lower or
-                candidate_lower in self._cities_lower):
+                candidate_lower in self._cities_lower or
+                candidate_lower in self._states_lower):
                 continue
 
             # Classify the entity
