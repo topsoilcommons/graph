@@ -146,6 +146,52 @@ class TestEntityExtractor(unittest.TestCase):
         self.assertIn(("WHOI", "ORGANIZATION"), ents)
         self.assertIn(("U.S. Navy", "ORGANIZATION"), ents)
 
+    def test_remaining_entity_false_negatives_gazetteer_names(self):
+        # Regression: the seven entity false negatives left after the
+        # October 21, 2026 re-verification were names the gazetteers
+        # did not know, or knew only in a truncated or wrongly typed
+        # form. Each name below is verified against its gold label in
+        # eval/eval_set.json first: iPhone and Watson are TECHNOLOGY,
+        # Moon and Mount Wilson Observatory are LOCATION, and
+        # Wikipedia, Carnegie Institution for Science, and Carnegie
+        # Observatories are ORGANIZATION. Gold text for the Moon is
+        # "Moon" (the document reads "landed on the Moon").
+        apple = pairs(EntityExtractor().extract(
+            "Apple developed the iPhone, a smartphone that runs iOS."))
+        self.assertIn(("iPhone", "TECHNOLOGY"), apple)
+
+        ibm = pairs(EntityExtractor().extract(
+            "IBM developed Watson, a question answering system, "
+            "in 2011."))
+        self.assertIn(("Watson", "TECHNOLOGY"), ibm)
+
+        armstrong = pairs(EntityExtractor().extract(
+            "Neil Armstrong worked for NASA and landed on the Moon "
+            "in 1969."))
+        self.assertIn(("Moon", "LOCATION"), armstrong)
+
+        wikipedia = pairs(EntityExtractor().extract(
+            "Jimmy Wales founded Wikipedia in 2001."))
+        self.assertIn(("Wikipedia", "ORGANIZATION"), wikipedia)
+
+        carnegie = pairs(EntityExtractor().extract(
+            "The Carnegie Institution for Science is headquartered "
+            "in Washington, D.C. Andrew Carnegie founded the "
+            "Carnegie Institution for Science in 1902 to support "
+            "basic research. Its astronomy arm, the Carnegie "
+            "Observatories, grew out of the Mount Wilson "
+            "Observatory, which George Ellery Hale founded."))
+        self.assertIn(("Carnegie Institution for Science",
+                       "ORGANIZATION"), carnegie)
+        self.assertIn(("Carnegie Observatories", "ORGANIZATION"),
+                      carnegie)
+        self.assertIn(("Mount Wilson Observatory", "LOCATION"),
+                      carnegie)
+        self.assertNotIn(("Carnegie Institution", "PERSON"), carnegie)
+        self.assertNotIn(("Carnegie Observatories", "PERSON"), carnegie)
+        self.assertNotIn(("Mount Wilson Observatory", "PERSON"),
+                         carnegie)
+
     def test_sentence_initial_unknown_person(self):
         # Regression: the capitalized sequence pattern once skipped
         # every match starting a sentence, so an unknown person whose

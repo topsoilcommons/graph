@@ -601,3 +601,35 @@ the classes above. The unsupported gold types class (7) is
 untouched: no gold labels were changed, the labeling
 decision was not taken in this pass, and it stays open for
 a human, as instructed.
+
+## Addendum, October 21, 2026 (evening): the last seven entity false negatives closed
+
+The seven entity false negatives named at the foot of the
+October 21, 2026 re-verification addendum (iPhone, Watson,
+the Moon, and Wikipedia as names the gazetteers did not
+know, and the three Carnegie forms extracted with the wrong
+type or truncated) were each verified against
+eval/eval_set.json gold labels first, then added to the
+gazetteers in knowledge_graph_explorer/entity_extractor.py:
+iPhone and Watson to TECHNOLOGIES, Moon and Mount Wilson
+Observatory to CITIES, and Wikipedia, Carnegie Institution
+for Science, and Carnegie Observatories to
+KNOWN_ORGANIZATIONS. A dedicated regression test covers all
+seven names with their gold types, including that the
+Carnegie forms and Mount Wilson Observatory are not emitted
+as PERSON. Tests: 14 OK after, 13 before.
+
+New measured totals in results/eval_results.json, reproduced
+byte identically on the coordinator's rerun: entities
+P 0.961 R 1.0 F1 0.9801 (148 TP, 6 FP, 0 FN, so no gold
+entity in the 22 document set is missed); relations
+P 0.5079 R 0.8533 F1 0.6368 (64 TP, 62 FP, 11 FN), published
+as measured: relation recall rose with the new entities,
+precision fell on the added co-occurrence proposals, and
+relation F1 stands slightly below the 0.6387 it replaces.
+The retrieval demo rose to 21 of 22 on both checks (133
+nodes, 126 edges); the one remaining miss stands on a gold
+relation type outside the supported eight. No gold labels
+were changed, and the labeling decision on those types stays
+open for a human.
+

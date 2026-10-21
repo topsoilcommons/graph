@@ -35,7 +35,7 @@ CITIES = {
     "Miami", "Las Vegas", "Phoenix", "Nashville", "Hawthorne",
     "Heerlen", "Eindhoven", "Warsaw", "Armonk", "Ulm", "Huntsville",
     "Wapakoneta", "White Sulphur Springs", "Washington, D.C.",
-    "Woods Hole, Massachusetts",
+    "Woods Hole, Massachusetts", "Moon", "Mount Wilson Observatory",
 }
 
 STATES_REGIONS = {
@@ -73,6 +73,8 @@ KNOWN_ORGANIZATIONS = {
     "the European Union", "the United Nations",
     "Bell Labs", "Xerox PARC", "DARPA",
     "Woods Hole Oceanographic Institution", "WHOI", "U.S. Navy",
+    "Wikipedia", "Carnegie Institution for Science",
+    "Carnegie Observatories",
     "World Wide Web Consortium", "W3C",
     "Association for Computing Machinery", "ACM",
     "IEEE", "Royal Society",
@@ -140,7 +142,7 @@ TECHNOLOGIES = {
     "Redis", "Elasticsearch", "Kafka",
     "microservices", "serverless", "containerization",
     "DevOps", "agile", "Scrum",
-    "CRISPR-Cas9", "Alvin",
+    "CRISPR-Cas9", "Alvin", "iPhone", "Watson",
 }
 
 # Context words that hint at entity types

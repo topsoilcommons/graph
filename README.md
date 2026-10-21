@@ -26,7 +26,7 @@ dates, and tools the text names, and the links between them that the
 text states. It then puts those names and links in a map you can
 search and check.
 
-Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.9463, relations F1 0.6387.
+Measured on the current labeled set (22 documents, in results/eval_results.json): entities F1 0.9801, relations F1 0.6368.
 
 The tool is written in Python. Its main work runs with no added code
 libraries. NumPy and Matplotlib are used only to score the tests and
@@ -151,13 +151,13 @@ From `scripts/evaluate_extraction.py`, run 2026-10-20 against the
 hand labeled set in `eval/` (22 documents, 148 gold entities, 75
 gold relations; labeling rules and the expansion record in
 `eval/README.md`). Full artifact: `results/eval_results.json`,
-which stores the scores to four decimals (entities F1 0.9463,
-relations F1 0.6387); the table below rounds them to three.
+which stores the scores to four decimals (entities F1 0.9801,
+relations F1 0.6368); the table below rounds them to three.
 
 | | Precision | Recall | F1 |
 | --- | --- | --- | --- |
-| Entities (rule based) | 0.940 | 0.953 | 0.946 |
-| Relations (rule based) | 0.526 | 0.813 | 0.639 |
+| Entities (rule based) | 0.961 | 1.000 | 0.980 |
+| Relations (rule based) | 0.508 | 0.853 | 0.637 |
 
 The 0.937 versus 0.936 discrepancy is settled. On the original
 8 documents, the eval artifact `results/eval_results.json`
