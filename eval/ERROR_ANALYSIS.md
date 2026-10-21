@@ -550,3 +550,54 @@ not move because relation matching is on endpoint texts,
 which did not change. The unsupported gold types class
 (7) is untouched: no gold labels were changed, and that
 decision stays open for a human.
+
+## Addendum, October 21, 2026: ocean research names re-verified, already closed
+
+The classification above and the earlier addenda are left as
+written. On October 21, 2026 the assigned unit was the three
+names this analysis and the addenda named since October 17:
+Alvin, U.S. Navy, and WHOI. Each was checked first against
+the gold labels in `eval_set.json`, all in the ocean-research
+document: Alvin is gold TECHNOLOGY, and WHOI and U.S. Navy
+are gold ORGANIZATION. The direct check against the code and
+a fresh extraction showed the unit was already closed by the
+October 19, 2026 (evening) gazetteer growth recorded above:
+Alvin is in the technology gazetteer, and WHOI and U.S. Navy
+are in the organization gazetteer, and the extractor returns
+all six gold entities of the ocean-research document with
+their gold types and no extra entity in that document. No
+gazetteer entry was added in this pass: the gazetteers are
+sets, so re-adding the same names would have been a no-op,
+and no change was manufactured to look like progress. What
+did change is test coverage: those additions had no dedicated
+regression test (WHOI and U.S. Navy appeared only incidentally
+in the cross path fragment test, and Alvin in none), so a test
+now covers all three names with their gold types, including
+that Alvin is not emitted as a PERSON. Tests: 13 OK after,
+12 before.
+
+The measured totals in `results/eval_results.json` are
+unchanged, and the regenerated artifact is byte identical to
+the committed one: entities P 0.94 R 0.9527 F1 0.9463
+(141 TP, 9 FP, 7 FN, so 16 entity errors); relations
+P 0.5259 R 0.8133 F1 0.6387 (61 TP, 55 FP, 14 FN, so 69
+relation errors); 85 error instances in all, unchanged. The
+retrieval demo stayed at 20 of 22 on both checks (129 nodes,
+116 edges), its artifact also byte identical, and index.html
+regenerated with tools/build_scores.py is byte identical.
+A per document comparison of extracted entities before and
+after this pass shows no entity changed in any document,
+which is the expected result of a test only change: the
+extractor code was not touched.
+
+What remains is therefore not these three names. The 7
+entity false negatives are iPhone, Watson, the Moon, and
+Wikipedia (names the gazetteers do not know), and the three
+Carnegie forms in the carnegie-observatories document
+(Carnegie Institution for Science and Carnegie Observatories
+as ORGANIZATION, Mount Wilson Observatory as LOCATION), each
+extracted with the wrong type or truncated, as recorded in
+the classes above. The unsupported gold types class (7) is
+untouched: no gold labels were changed, the labeling
+decision was not taken in this pass, and it stays open for
+a human, as instructed.

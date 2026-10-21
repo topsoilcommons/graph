@@ -349,6 +349,29 @@ Read those numbers the way they were earned:
   endpoint texts, which did not change. The retrieval
   demo stayed at 20 of 22 on both checks (129 nodes, 116
   edges, artifact unchanged).
+- **Ocean research names re-verified, October 21, 2026,
+  and found already closed.** The three names named as
+  remaining after the West Virginia fix, Alvin, U.S. Navy,
+  and WHOI, were checked first against their gold labels
+  (Alvin TECHNOLOGY; WHOI and U.S. Navy ORGANIZATION, all
+  in the ocean-research document) and then against the
+  code and a fresh extraction: all three were added in
+  the October 19, 2026 (evening) gazetteer growth above
+  and are extracted with their gold types, so no
+  gazetteer entry was added in this pass and no score
+  moved. What the pass added is the dedicated regression
+  test those names lacked, covering all three with their
+  gold types (13 tests OK, 12 before). Scores are
+  unchanged, exactly as measured: entities F1 0.9463
+  (precision 0.94, recall 0.9527; 141 true positives, 9
+  false positives, 7 false negatives), relations F1
+  0.6387 (61 true positives, 55 false positives, 14 false
+  negatives), and the retrieval demo stayed at 20 of 22
+  on both checks. The 7 remaining entity misses are
+  iPhone, Watson, the Moon, Wikipedia, and the three
+  Carnegie forms; the 7 gold relations outside the
+  supported eight still need a human decision, and none
+  was taken here.
 - **The misses are named, not rounded away.** The system misses
   entities its gazetteers do not know (Watson, iPhone), cannot
   follow pronouns across sentences ("He joined Microsoft" loses

@@ -127,6 +127,25 @@ class TestEntityExtractor(unittest.TestCase):
         self.assertIn(("West Virginia", "LOCATION"), other_context)
         self.assertNotIn(("West Virginia", "PERSON"), other_context)
 
+    def test_ocean_research_gazetteer_names(self):
+        # Regression: the ocean research gazetteer names added on
+        # October 19, 2026 (evening) had no dedicated test: Alvin was
+        # covered by no test, and WHOI and U.S. Navy only incidentally
+        # through the cross path fragment test. Each name is verified
+        # against its gold label in eval/eval_set.json (ocean-research
+        # document): Alvin is TECHNOLOGY, not a person name, and the
+        # punctuated U.S. Navy is ORGANIZATION.
+        ents = pairs(EntityExtractor().extract(
+            "The submersible Alvin has carried researchers to the deep "
+            "ocean since 1964. Alvin is operated by the Woods Hole "
+            "Oceanographic Institution (WHOI), based in Woods Hole, "
+            "Massachusetts. The U.S. Navy commissioned Alvin and "
+            "remains its owner."))
+        self.assertIn(("Alvin", "TECHNOLOGY"), ents)
+        self.assertNotIn(("Alvin", "PERSON"), ents)
+        self.assertIn(("WHOI", "ORGANIZATION"), ents)
+        self.assertIn(("U.S. Navy", "ORGANIZATION"), ents)
+
     def test_sentence_initial_unknown_person(self):
         # Regression: the capitalized sequence pattern once skipped
         # every match starting a sentence, so an unknown person whose
